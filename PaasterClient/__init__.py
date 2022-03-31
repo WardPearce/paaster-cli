@@ -2,6 +2,7 @@ import toga
 import pyclip
 import requests
 import secrets
+import os
 
 from pynput import keyboard
 
@@ -12,6 +13,11 @@ class PaasterClient(toga.App):
     _paaster_api = "https://api.paaster.io/"
     _paaster_frontend = "https://paaster.io/"
     _global_shortcut = None
+    _default_shortcut = "<ctrl>+<alt>+p"
+
+    def __save_shortcut(self, value: str) -> None:
+        with open("shortcut.txt", "w+") as f_:
+            f_.write(value)
 
     def __end_slash(self, value: str) -> str:
         if not value.endswith("/"):
@@ -35,6 +41,7 @@ class PaasterClient(toga.App):
         except ValueError:
             pass
         else:
+            self.__save_shortcut(self._shortcut.value)
             self._global_shortcut.start()
 
     def on_paste(self) -> None:
@@ -110,7 +117,13 @@ class PaasterClient(toga.App):
         self._shortcut = toga.TextInput(
             style=Pack(width=300)
         )
-        self._shortcut.value = "<ctrl>+<alt>+p"
+        if os.path.exists("./shortcut.txt"):
+            with open("shortcut.txt") as f_:
+                self._shortcut.value = f_.read()
+        else:
+            self.__save_shortcut(self._default_shortcut)
+            self._shortcut.value = self._default_shortcut
+
         self.update_shortcut()
 
         box.add(shortcut_label)
