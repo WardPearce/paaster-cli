@@ -70,14 +70,14 @@ class PaasterClient(toga.App):
     def startup(self) -> None:
         self.main_window = toga.Window(
             title=self.name,
-            size=(300, 400)
+            size=(300, 300)
         )
 
         box = toga.Box(
             style=Pack(
                 flex=1,
                 direction=COLUMN,
-                padding=10
+                padding_left=10
             )
         )
 
@@ -143,13 +143,13 @@ class PaasterClient(toga.App):
 
         self._copy_to_clipboard = toga.Switch(
             "Copy URL on save",
-            style=Pack(padding_top=20)
+            style=Pack(padding_top=20, width=300)
         )
         box.add(self._copy_to_clipboard)
 
         self._open_browser = toga.Switch(
             "Open in browser on save",
-            style=Pack(padding_top=10)
+            style=Pack(padding_top=10, width=300)
         )
         box.add(self._open_browser)
 
