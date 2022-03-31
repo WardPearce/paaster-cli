@@ -3,6 +3,7 @@ import pyclip
 import requests
 import secrets
 import os
+import webbrowser
 
 from pynput import keyboard
 
@@ -57,10 +58,14 @@ class PaasterClient(toga.App):
             }
         )
         if resp.status_code == 200:
-            json = resp.json()
-            pyclip.copy(
-                f"{self._paaster_frontend}{json['pasteId']}#{client_sided_key}"
-            )
+            paste = resp.json()
+            url = f"{self._paaster_frontend}{paste['pasteId']}#{client_sided_key}"  # noqa: E501
+
+            if self._copy_to_clipboard.is_on:
+                pyclip.copy(url)
+
+            if self._open_browser.is_on:
+                webbrowser.open(url, 0)
 
     def startup(self) -> None:
         self.main_window = toga.Window(
@@ -132,9 +137,21 @@ class PaasterClient(toga.App):
             toga.Button(
                 "Update shortcut",
                 on_press=self.update_shortcut,
-                style=Pack(width=300)
+                style=Pack(width=300, padding_top=5)
             )
         )
+
+        self._copy_to_clipboard = toga.Switch(
+            "Copy URL on save",
+            style=Pack(padding_top=20)
+        )
+        box.add(self._copy_to_clipboard)
+
+        self._open_browser = toga.Switch(
+            "Open in browser on save",
+            style=Pack(padding_top=10)
+        )
+        box.add(self._open_browser)
 
         self.main_window.content = box
         self.main_window.show()
