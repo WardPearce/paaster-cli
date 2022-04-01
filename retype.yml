@@ -1,0 +1,15 @@
+input: ./docs
+output: .retype
+url: https://wardpearce.github.io/paaster-client
+branding:
+  title: CryptoJS
+  label: Docs
+  logo: /static/cryptojs-logo.png
+links:
+  - text: GitHub
+    link: https://github.com/WardPearce/paaster-client
+    icon: mark-github
+edit:
+  repo: https://github.com/WardPearce/paaster-client
+footer:
+  copyright: "&copy; Copyright {{ year }}. All rights reserved."
