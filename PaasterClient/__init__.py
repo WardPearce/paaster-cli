@@ -5,8 +5,11 @@ import secrets
 import os
 import webbrowser
 
-from pynput import keyboard
 
+from cryptography.hazmat.primitives import hashes
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+
+from pynput import keyboard
 from toga.style.pack import Pack, LEFT, COLUMN
 
 
@@ -50,22 +53,22 @@ class PaasterClient(toga.App):
 
         client_sided_key = secrets.token_urlsafe(32)
 
-        resp = requests.put(
-            self._paaster_api + "api/paste/create",
-            data="",
-            headers={
-                "Content-Type": "text/plain"
-            }
-        )
-        if resp.status_code == 200:
-            paste = resp.json()
-            url = f"{self._paaster_frontend}{paste['pasteId']}#{client_sided_key}"  # noqa: E501
+        # resp = requests.put(
+        #     self._paaster_api + "api/paste/create",
+        #     data="",
+        #     headers={
+        #         "Content-Type": "text/plain"
+        #     }
+        # )
+        # if resp.status_code == 200:
+        #     paste = resp.json()
+        #     url = f"{self._paaster_frontend}{paste['pasteId']}#{client_sided_key}"  # noqa: E501
 
-            if self._copy_to_clipboard.is_on:
-                pyclip.copy(url)
+        #     if self._copy_to_clipboard.is_on:
+        #         pyclip.copy(url)
 
-            if self._open_browser.is_on:
-                webbrowser.open(url, 0)
+        #     if self._open_browser.is_on:
+        #         webbrowser.open(url, 0)
 
     def startup(self) -> None:
         self.main_window = toga.Window(

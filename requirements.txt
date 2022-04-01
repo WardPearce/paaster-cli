@@ -1,3 +1,4 @@
 pyclip
 toga
 pynput
+cryptography
