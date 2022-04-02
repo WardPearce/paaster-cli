@@ -5,12 +5,10 @@ import secrets
 import os
 import webbrowser
 
-
-from cryptography.hazmat.primitives import hashes
-from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-
 from pynput import keyboard
 from toga.style.pack import Pack, LEFT, COLUMN
+
+from .encrypt import encrypt_for_cryptojs
 
 
 class PaasterClient(toga.App):
@@ -50,25 +48,31 @@ class PaasterClient(toga.App):
 
     def on_paste(self) -> None:
         plain_clipboard = pyclip.paste()
+        if not plain_clipboard:
+            return
 
         client_sided_key = secrets.token_urlsafe(32)
 
-        # resp = requests.put(
-        #     self._paaster_api + "api/paste/create",
-        #     data="",
-        #     headers={
-        #         "Content-Type": "text/plain"
-        #     }
-        # )
-        # if resp.status_code == 200:
-        #     paste = resp.json()
-        #     url = f"{self._paaster_frontend}{paste['pasteId']}#{client_sided_key}"  # noqa: E501
+        resp = requests.put(
+            self._paaster_api + "api/paste/create",
+            data=encrypt_for_cryptojs(plain_clipboard, client_sided_key),
+            headers={
+                "Content-Type": "text/plain"
+            }
+        )
+        if resp.status_code == 200:
+            paste = resp.json()
+            url = (
+                self._paaster_frontend +
+                paste["pasteId"] +
+                f"#{client_sided_key}"
+            )
 
-        #     if self._copy_to_clipboard.is_on:
-        #         pyclip.copy(url)
+            if self._copy_to_clipboard.is_on:
+                pyclip.copy(url)
 
-        #     if self._open_browser.is_on:
-        #         webbrowser.open(url, 0)
+            if self._open_browser.is_on:
+                webbrowser.open(url, 0)
 
     def startup(self) -> None:
         self.main_window = toga.Window(
@@ -169,7 +173,3 @@ def main():
         version="0.0.0",
         home_page="https://paaster.io"
     )
-
-
-if __name__ == '__main__':
-    main().main_loop()
