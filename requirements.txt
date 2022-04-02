@@ -3,3 +3,4 @@ toga
 pynput
 cryptography
 requests
+pywin32
