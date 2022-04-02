@@ -2,3 +2,4 @@ pyclip
 toga
 pynput
 cryptography
+requests
