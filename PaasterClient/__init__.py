@@ -8,6 +8,7 @@ from pynput import keyboard
 from toga.style.pack import Pack, LEFT, COLUMN
 
 from .misc import end_slash
+from .encrypt import password_encrypt
 
 
 class PaasterClient(toga.App):
@@ -44,7 +45,7 @@ class PaasterClient(toga.App):
 
         resp = requests.put(
             self._paaster_api + "api/paste/create",
-            data="",
+            data=password_encrypt(client_sided_key, plain_clipboard),
             headers={
                 "Content-Type": "text/plain"
             }
