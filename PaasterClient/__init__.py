@@ -7,7 +7,6 @@ import webbrowser
 from pynput import keyboard
 from toga.style.pack import Pack, LEFT, COLUMN
 
-from .encrypt import encrypt_for_cryptojs
 from .misc import end_slash
 
 
@@ -45,7 +44,7 @@ class PaasterClient(toga.App):
 
         resp = requests.put(
             self._paaster_api + "api/paste/create",
-            data=encrypt_for_cryptojs(plain_clipboard, client_sided_key),
+            data="",
             headers={
                 "Content-Type": "text/plain"
             }
