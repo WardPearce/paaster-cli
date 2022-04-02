@@ -2,13 +2,13 @@ import toga
 import pyclip
 import requests
 import secrets
-import os
 import webbrowser
 
 from pynput import keyboard
 from toga.style.pack import Pack, LEFT, COLUMN
 
 from .encrypt import encrypt_for_cryptojs
+from .misc import end_slash
 
 
 class PaasterClient(toga.App):
@@ -17,20 +17,11 @@ class PaasterClient(toga.App):
     _global_shortcut = None
     _default_shortcut = "<ctrl>+<alt>+p"
 
-    def __save_shortcut(self, value: str) -> None:
-        with open("shortcut.txt", "w+") as f_:
-            f_.write(value)
-
-    def __end_slash(self, value: str) -> str:
-        if not value.endswith("/"):
-            value += "/"
-        return value
-
     def on_api_url_change(self, widget: toga.Widget) -> None:
-        self._paaster_api = self.__end_slash(widget.value)
+        self._paaster_api = end_slash(widget.value)
 
     def on_frontend_url_change(self, widget: toga.Widget) -> None:
-        self._paaster_frontend = self.__end_slash(widget.value)
+        self._paaster_frontend = end_slash(widget.value)
 
     def update_shortcut(self, button=None) -> None:
         if self._global_shortcut:
@@ -43,7 +34,6 @@ class PaasterClient(toga.App):
         except ValueError:
             pass
         else:
-            self.__save_shortcut(self._shortcut.value)
             self._global_shortcut.start()
 
     def on_paste(self) -> None:
@@ -129,12 +119,8 @@ class PaasterClient(toga.App):
         self._shortcut = toga.TextInput(
             style=Pack(width=300)
         )
-        if os.path.exists("./shortcut.txt"):
-            with open("shortcut.txt") as f_:
-                self._shortcut.value = f_.read()
-        else:
-            self.__save_shortcut(self._default_shortcut)
-            self._shortcut.value = self._default_shortcut
+
+        self._shortcut.value = self._default_shortcut
 
         self.update_shortcut()
 
