@@ -87,7 +87,14 @@ class PaasterClient(toga.App):
                 pyclip.copy(url)
 
             if self._open_browser.is_on:
-                webbrowser.open(url, 0)
+                # Adds server secret at end of URL.
+                # this will be removed from URL ASAP by paaster,
+                # this functionality isn't done for copy on clipboard
+                # because someone may share the link directly
+                # with someone else.
+                webbrowser.open(
+                    url + "&serverSecret=" + paste['serverSecret'], 0
+                )
 
     def startup(self) -> None:
         self._storage = JsonStorage()
@@ -192,7 +199,7 @@ def main():
         "paaster",
         "io.paaster.app",
         author="WardPearce",
-        description="Simple program to upload to paaster",
+        description="Upload encrypted pastes to paaster.io from your desktop",
         version="0.0.0",
         home_page="https://paaster.io"
     )
