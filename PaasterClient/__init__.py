@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+
+"""
+GNU GENERAL PUBLIC LICENSE
+Version 3, 29 June 2007
+"""
+
 import toga
 import pyclip
 import requests
@@ -6,6 +13,7 @@ import webbrowser
 
 from pynput import keyboard
 from toga.style.pack import Pack, LEFT, COLUMN
+from plyer import notification
 
 from .misc import end_slash
 from .encrypt import password_encrypt
@@ -49,7 +57,10 @@ class PaasterClient(toga.App):
 
     def on_paste(self) -> None:
         plain_clipboard = pyclip.paste()
-        if not plain_clipboard:
+        if not plain_clipboard.strip():
+            notification.notify(
+                self.name, "Clipboard currently blank, upload cancelled."
+            )
             return
 
         client_sided_key = secrets.token_urlsafe(32)
@@ -70,6 +81,9 @@ class PaasterClient(toga.App):
             )
 
             if self._copy_to_clipboard.is_on:
+                notification.notify(
+                    self.name, "Share URL copied to clipboard."
+                )
                 pyclip.copy(url)
 
             if self._open_browser.is_on:
@@ -80,7 +94,7 @@ class PaasterClient(toga.App):
 
         self.main_window = toga.Window(
             title=self.name,
-            size=(300, 300)
+            size=(320, 300)
         )
 
         box = toga.Box(
@@ -101,11 +115,9 @@ class PaasterClient(toga.App):
             style=Pack(width=300),
             on_change=self.on_api_url_change
         )
-        storage_api = self.storage.get("api")
-        if storage_api:
-            api_url.value = storage_api
-        else:
-            api_url.value = self._paaster_api
+        api_url.value = self.storage.get(
+            "api", self._paaster_api
+        )
 
         frontend_url_label = toga.Label(
             "Frontend URL",
@@ -159,7 +171,7 @@ class PaasterClient(toga.App):
             "Copy URL on save",
             style=Pack(padding_top=20, width=300),
             on_toggle=self.on_copy_on_save_change,
-            is_on=self.storage.get("copy_on_save", False)
+            is_on=self.storage.get("copy_on_save", True)
         )
         box.add(self._copy_to_clipboard)
 
