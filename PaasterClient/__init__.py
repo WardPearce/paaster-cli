@@ -25,21 +25,21 @@ class PaasterClient(toga.App):
     _paaster_frontend = "https://paaster.io/"
     _global_shortcut = None
     _default_shortcut = "<ctrl>+<alt>+p"
-    storage: JsonStorage
+    _storage: JsonStorage
 
     def on_api_url_change(self, widget: toga.Widget) -> None:
         self._paaster_api = end_slash(widget.value)
-        self.storage.set("api", self._paaster_api)
+        self._storage.set("api", self._paaster_api)
 
     def on_frontend_url_change(self, widget: toga.Widget) -> None:
         self._paaster_frontend = end_slash(widget.value)
-        self.storage.set("frontend", self._paaster_frontend)
+        self._storage.set("frontend", self._paaster_frontend)
 
     def on_copy_on_save_change(self, widget: toga.Widget) -> None:
-        self.storage.set("copy_on_save", widget.is_on)
+        self._storage.set("copy_on_save", widget.is_on)
 
     def on_browser_on_save_change(self, widget: toga.Widget) -> None:
-        self.storage.set("browser_on_save", widget.is_on)
+        self._storage.set("browser_on_save", widget.is_on)
 
     def update_shortcut(self, button=None) -> None:
         if self._global_shortcut:
@@ -53,7 +53,7 @@ class PaasterClient(toga.App):
             pass
         else:
             self._global_shortcut.start()
-            self.storage.set("shortcut", self._shortcut.value)
+            self._storage.set("shortcut", self._shortcut.value)
 
     def on_paste(self) -> None:
         plain_clipboard = pyclip.paste()
@@ -90,7 +90,7 @@ class PaasterClient(toga.App):
                 webbrowser.open(url, 0)
 
     def startup(self) -> None:
-        self.storage = JsonStorage()
+        self._storage = JsonStorage()
 
         self.main_window = toga.Window(
             title=self.name,
@@ -115,7 +115,7 @@ class PaasterClient(toga.App):
             style=Pack(width=300),
             on_change=self.on_api_url_change
         )
-        api_url.value = self.storage.get(
+        api_url.value = self._storage.get(
             "api", self._paaster_api
         )
 
@@ -130,7 +130,7 @@ class PaasterClient(toga.App):
             style=Pack(width=300),
             on_change=self.on_frontend_url_change
         )
-        frontend_url.value = self.storage.get(
+        frontend_url.value = self._storage.get(
             "frontend", self._paaster_frontend
         )
 
@@ -151,7 +151,7 @@ class PaasterClient(toga.App):
             style=Pack(width=300)
         )
 
-        self._shortcut.value = self.storage.get(
+        self._shortcut.value = self._storage.get(
             "shortcut", self._default_shortcut
         )
 
@@ -171,7 +171,7 @@ class PaasterClient(toga.App):
             "Copy URL on save",
             style=Pack(padding_top=20, width=300),
             on_toggle=self.on_copy_on_save_change,
-            is_on=self.storage.get("copy_on_save", True)
+            is_on=self._storage.get("copy_on_save", True)
         )
         box.add(self._copy_to_clipboard)
 
@@ -179,7 +179,7 @@ class PaasterClient(toga.App):
             "Open in browser on save",
             style=Pack(padding_top=10, width=300),
             on_toggle=self.on_browser_on_save_change,
-            is_on=self.storage.get("browser_on_save", False)
+            is_on=self._storage.get("browser_on_save", False)
         )
         box.add(self._open_browser)
 
