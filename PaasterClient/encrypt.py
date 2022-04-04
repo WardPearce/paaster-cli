@@ -30,8 +30,7 @@ def password_encrypt(secret: str, raw_data: bytes) -> str:
     padder = padding.PKCS7(
         algorithms.AES.block_size  # type: ignore
     ).padder()
-    padded_data = padder.update(raw_data)
-    padded_data += padder.finalize()
+    padded_data = padder.update(raw_data) + padder.finalize()
 
     salt = os.urandom(128)
     iv = os.urandom(16)
@@ -49,7 +48,9 @@ def password_encrypt(secret: str, raw_data: bytes) -> str:
     )
     encryptor = cipher.encryptor()
 
+    encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
+
     return (
         iv.hex() + "," + salt.hex() + "," +
-        (encryptor.update(padded_data) + encryptor.finalize()).hex()
+        encrypted_data.hex()
     )
