@@ -27,7 +27,9 @@ def password_encrypt(secret: str, raw_data: bytes) -> str:
         Encrypted data hex encoded with IV & salt.
     """
 
-    padder = padding.PKCS7(128).padder()
+    padder = padding.PKCS7(
+        algorithms.AES.block_size  # type: ignore
+    ).padder()
     padded_data = padder.update(raw_data)
     padded_data += padder.finalize()
 
