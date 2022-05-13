@@ -1,6 +1,0 @@
-pyclip
-toga
-pynput
-cryptography
-requests
-plyer
