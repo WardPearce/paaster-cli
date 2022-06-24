@@ -5,21 +5,20 @@ GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
 """
 
-import pyclip
+import pyperclip
 import requests
 import secrets
 import click
 import webbrowser
 
-from plyer import notification
+from typing import Any
 
 from .misc import end_slash
 from .encrypt import password_encrypt
 from .storage import JsonStorage
-from typing import Any
 
 
-VALID = ["NAME", "API_URL", "FRONTEND_URL",
+VALID = ["API_URL", "FRONTEND_URL",
          "COPY_URL_TO_CLIPBOARD", "OPEN_URL_IN_BROWSER"]
 STORAGE = JsonStorage()
 
@@ -27,12 +26,11 @@ _paaster_api = STORAGE.get("API_URL")
 _paaster_frontend = STORAGE.get("FRONTEND_URL")
 _copy_to_clipboard = STORAGE.get("COPY_URL_TO_CLIPBOARD")
 _open_browser = STORAGE.get("OPEN_URL_IN_BROWSER")
-_name = STORAGE.get("NAME")
 
 
 @click.group()
 def main() -> None:
-    """Upload to paaster from your clipboard encrypted.
+    """Upload locally encrypted pastes to paaster.io from your desktop.
     """
 
     pass
@@ -66,18 +64,18 @@ def run() -> None:
     """Upload locally encrypted clipboard to API.
     """
 
-    plain_clipboard = pyclip.paste()
+    plain_clipboard = pyperclip.paste()
     if not plain_clipboard.strip():
-        notification.notify(
-            _name, "Clipboard currently blank, upload cancelled."
-        )
         return
 
     client_sided_key = secrets.token_urlsafe(32)
 
     resp = requests.put(
         _paaster_api + "api/paste/create",
-        data=password_encrypt(client_sided_key, plain_clipboard),
+        data=password_encrypt(
+            client_sided_key,
+            plain_clipboard.encode()
+        ),
         headers={
             "Content-Type": "text/plain"
         }
@@ -91,10 +89,7 @@ def run() -> None:
         )
 
         if _copy_to_clipboard:
-            notification.notify(
-                _name, "Share URL copied to clipboard."
-            )
-            pyclip.copy(url)
+            pyperclip.copy(url)
 
         if _open_browser:
             # Adds server secret at end of URL.
@@ -102,6 +97,8 @@ def run() -> None:
             # this functionality isn't done for copy on clipboard
             # because someone may share the link directly
             # with someone else.
+
+            # This secret isn't shared with the server at any point.
             webbrowser.open(
-                url + "&serverSecret=" + paste['serverSecret'], 0
+                url + "&serverSecret=" + paste["serverSecret"], 0
             )
