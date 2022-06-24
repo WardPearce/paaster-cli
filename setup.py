@@ -8,7 +8,7 @@ def get_long_description():
 
 setup(
     name="paaster",
-    version="0.0.2",
+    version="0.0.3",
     url="https://github.com/WardPearce/paaster-cli",
     author="WardPearce",
     author_email="wardpearce@pm.me",

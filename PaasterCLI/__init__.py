@@ -10,17 +10,29 @@ import requests
 import secrets
 import click
 import webbrowser
+import platform
 
 from typing import Any
+from os import getenv
 
 from .misc import end_slash
 from .encrypt import password_encrypt
 from .storage import JsonStorage
 
 
+SYSTEM = platform.system()
+if SYSTEM == "Linux":
+    pathway = f"{getenv('HOME')}/.config/paaster"
+elif SYSTEM == "Windows":
+    pathway = f"{getenv('APPDATA')}\\paaster"
+elif SYSTEM == "Darwin":
+    pathway = f"/Users/{getenv('HOME')}/Library/Application Support/paaster"
+else:
+    raise Exception("Platform not supported.")
+
 VALID = ["API_URL", "FRONTEND_URL",
          "COPY_URL_TO_CLIPBOARD", "OPEN_URL_IN_BROWSER"]
-STORAGE = JsonStorage()
+STORAGE = JsonStorage(pathway)
 
 _paaster_api = STORAGE.get("API_URL")
 _paaster_frontend = STORAGE.get("FRONTEND_URL")
