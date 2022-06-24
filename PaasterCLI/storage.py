@@ -8,12 +8,11 @@ Version 3, 29 June 2007
 import json
 
 from typing import Any
-from os import mkdir, path, getenv
+from os import mkdir, path
 
 
 class JsonStorage:
-    def __init__(self, pathway: str =
-                 f"{getenv('HOME')}/.config/paaster") -> None:
+    def __init__(self, pathway: str) -> None:
         self._pathway = pathway
         if not path.exists(self._pathway):
             self.__make_config_init()
