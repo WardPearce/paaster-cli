@@ -2,7 +2,9 @@
 Upload locally encrypted pastes to paaster.io from your desktop.
 
 ## Support
-Currently only tested on Linux. Let me know if you have any issues on Windows or MacOS.
+- Linux (Tested)
+- Windows (Tested)
+- MacOS (Not test, please submit issue if works or not)
 
 ## Installing
 - `pip3 install paaster`
