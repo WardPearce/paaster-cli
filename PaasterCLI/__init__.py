@@ -60,7 +60,7 @@ def set_(name: str, value: Any) -> None:
 
 
 @main.command()
-def run() -> None:
+def upload() -> None:
     """Upload locally encrypted clipboard to API.
     """
 

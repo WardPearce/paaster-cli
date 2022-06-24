@@ -10,7 +10,7 @@ Currently only tested on Linux. Let me know if you have any issues on Windows or
 ## Commands
 - paaster --help
     - Shows commands
-- paaster run
+- paaster upload
     - Upload locally encrypted clipboard to API.
 - paaster set --name "" --value ""
     - Sets config parameters
