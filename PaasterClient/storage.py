@@ -8,15 +8,30 @@ Version 3, 29 June 2007
 import json
 
 from typing import Any
+from os import mkdir, path, getenv
 
 
 class JsonStorage:
-    def __init__(self, pathway: str = "./paaster.json") -> None:
+    def __init__(self, pathway: str =
+                 f"{getenv('HOME')}/.config/paaster") -> None:
         self._pathway = pathway
+        if not path.exists(self._pathway):
+            self.__make_config_init()
+
+    def __make_config_init(self) -> None:
+        mkdir(self._pathway)
+        self.set("API_URL", "https://api.paaster.io/")
+        self.set("FRONTEND_URL", "https://paaster.io/")
+        self.set("COPY_URL_TO_CLIPBOARD", True)
+        self.set("OPEN_URL_IN_BROWSER", False)
+        self.set("NAME", "paaster")
 
     @property
     def pathway(self) -> str:
-        return self._pathway
+        return path.join(
+            self._pathway,
+            "config.json"
+        )
 
     def all(self) -> dict:
         try:
