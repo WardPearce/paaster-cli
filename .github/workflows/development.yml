@@ -2,11 +2,13 @@ name: Development workflow
 
 on:
   push:
-    branches:
-    - Development
+    branches: [ "main" ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ "main" ]
 
 jobs:
-  base-production:
+  base-development:
     runs-on: ubuntu-latest
 
     steps:
