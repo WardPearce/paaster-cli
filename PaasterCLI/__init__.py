@@ -99,4 +99,4 @@ def upload() -> None:
             # with someone else.
 
             # This secret isn't shared with the server at any point.
-            webbrowser.open(url + "&serverSecret=" + paste["serverSecret"], 0)
+            webbrowser.open(url + "&ownerSecret=" + paste["owner_secret"], 0)
