@@ -5,20 +5,18 @@ GNU GENERAL PUBLIC LICENSE
 Version 3, 29 June 2007
 """
 
-import pyperclip
-import requests
-import secrets
-import click
-import webbrowser
 import platform
-
-from typing import Any
+import webbrowser
 from os import getenv
+from typing import Any
 
-from .misc import end_slash
-from .encrypt import password_encrypt
+import click
+import pyperclip
+import pysodium
+import requests
+
+from .misc import end_slash, url_unpadded_base64
 from .storage import JsonStorage
-
 
 SYSTEM = platform.system()
 if SYSTEM == "Linux":
@@ -30,8 +28,7 @@ elif SYSTEM == "Darwin":
 else:
     raise Exception("Platform not supported.")
 
-VALID = ["API_URL", "FRONTEND_URL",
-         "COPY_URL_TO_CLIPBOARD", "OPEN_URL_IN_BROWSER"]
+VALID = ["API_URL", "FRONTEND_URL", "COPY_URL_TO_CLIPBOARD", "OPEN_URL_IN_BROWSER"]
 STORAGE = JsonStorage(pathway)
 
 _paaster_api = STORAGE.get("API_URL")
@@ -42,8 +39,7 @@ _open_browser = STORAGE.get("OPEN_URL_IN_BROWSER")
 
 @click.group()
 def main() -> None:
-    """Upload locally encrypted pastes to paaster.io from your desktop.
-    """
+    """Upload locally encrypted pastes to paaster.io from your desktop."""
 
     pass
 
@@ -52,8 +48,7 @@ def main() -> None:
 @click.option("--name")
 @click.option("--value")
 def set_(name: str, value: Any) -> None:
-    """Set a config parameter.
-    """
+    """Set a config parameter."""
 
     name = name.upper()
 
@@ -73,32 +68,25 @@ def set_(name: str, value: Any) -> None:
 
 @main.command()
 def upload() -> None:
-    """Upload locally encrypted clipboard to API.
-    """
+    """Upload locally encrypted clipboard to API."""
 
     plain_clipboard = pyperclip.paste()
     if not plain_clipboard.strip():
         return
 
-    client_sided_key = secrets.token_urlsafe(32)
-
-    resp = requests.put(
-        _paaster_api + "api/paste/create",
-        data=password_encrypt(
-            client_sided_key,
-            plain_clipboard.encode()
-        ),
-        headers={
-            "Content-Type": "text/plain"
-        }
+    raw_key = pysodium.randombytes(32)
+    raw_iv = pysodium.randombytes(pysodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES)
+    cipher_text = pysodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
+        plain_clipboard.encode("utf8"), None, raw_iv, raw_key
     )
-    if resp.status_code == 200:
+
+    resp = requests.post(
+        _paaster_api + f"controller/paste/{url_unpadded_base64(raw_iv)}",
+        data=cipher_text,
+    )
+    if resp.status_code == 201:
         paste = resp.json()
-        url = (
-            _paaster_frontend +
-            paste["pasteId"] +
-            f"#{client_sided_key}"
-        )
+        url = _paaster_frontend + paste["_id"] + f"#{url_unpadded_base64(raw_key)}"
 
         if _copy_to_clipboard:
             pyperclip.copy(url)
@@ -111,6 +99,4 @@ def upload() -> None:
             # with someone else.
 
             # This secret isn't shared with the server at any point.
-            webbrowser.open(
-                url + "&serverSecret=" + paste["serverSecret"], 0
-            )
+            webbrowser.open(url + "&serverSecret=" + paste["serverSecret"], 0)
