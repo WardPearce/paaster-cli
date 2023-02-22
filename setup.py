@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 
 def get_long_description():
@@ -8,24 +8,16 @@ def get_long_description():
 
 setup(
     name="paaster",
-    version="0.0.3",
+    version="1.0.0",
     url="https://github.com/WardPearce/paaster-cli",
     author="WardPearce",
     author_email="wardpearce@pm.me",
-    description=(
-        "Upload locally encrypted pastes to "
-        "paaster.io from your desktop."
-    ),
+    description=("Upload locally encrypted pastes to " "paaster.io from your desktop."),
     license="GPL-3.0",
     long_description=get_long_description(),
     long_description_content_type="text/markdown",
     py_modules=["PaasterCLI"],
-    install_requires=[
-        "pyperclip",
-        "cryptography",
-        "requests",
-        "click"
-    ],
+    install_requires=["pyperclip", "pysodium", "requests", "click", "desktop-notifier"],
     entry_points="""
         [console_scripts]
         paaster=PaasterCLI:main
@@ -33,5 +25,5 @@ setup(
     packages=find_packages(),
     python_requires=">=3.6",
     include_package_data=True,
-    zip_safe=False
+    zip_safe=False,
 )

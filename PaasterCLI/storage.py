@@ -6,9 +6,8 @@ Version 3, 29 June 2007
 """
 
 import json
-
-from typing import Any
 from os import mkdir, path
+from typing import Any
 
 
 class JsonStorage:
@@ -18,7 +17,11 @@ class JsonStorage:
             self.__make_config_init()
 
     def __make_config_init(self) -> None:
-        mkdir(self._pathway)
+        try:
+            mkdir(self._pathway)
+        except FileExistsError:
+            pass
+
         self.set("API_URL", "https://api.paaster.io/")
         self.set("FRONTEND_URL", "https://paaster.io/")
         self.set("COPY_URL_TO_CLIPBOARD", True)
@@ -27,10 +30,7 @@ class JsonStorage:
 
     @property
     def pathway(self) -> str:
-        return path.join(
-            self._pathway,
-            "config.json"
-        )
+        return path.join(self._pathway, "config.json")
 
     def all(self) -> dict:
         try:
@@ -44,7 +44,7 @@ class JsonStorage:
 
     def get(self, key: str, fallback: Any = None) -> Any:
         data = self.all()
-        return data[key] if key in data else fallback
+        return data.get(key, fallback)
 
     def set(self, key: str, value: Any) -> None:
         data = self.all()
