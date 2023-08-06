@@ -1,28 +1,27 @@
-# Paaster CLI
-Upload locally encrypted pastes to paaster.io from your desktop.
+# Paaster CLI: Encrypted Pastes from Your Terminal
 
 ## Support
 - Linux (Tested)
 - Windows (Tested)
-- MacOS (Not test, please submit issue if works or not)
+- MacOS (Not tested, please submit an issue if it works or not)
 
-## Installing
+## Installation
 - `pip3 install paaster`
 
 ## Commands
-- paaster --help
-    - Shows commands
-- paaster upload
-    - Upload locally encrypted clipboard to API.
-- paaster set --name "" --value ""
-    - Sets config parameters
+- `paaster --help`: Shows available commands.
+- `paaster upload`: Upload locally encrypted clipboard to the API.
+
+    Options:
+    - `-m, --mode TEXT`: Specify the mode for the paste, choose from "clipboard", "file", or "inline". (default: clipboard)
+    - `-ctc, --copy_to_clipboard BOOLEAN`: Overwrite COPY_URL_TO_CLIPBOARD setting. (default: True)
+    - `-ob, --open_browser BOOLEAN`: Overwrite OPEN_URL_IN_BROWSER setting. (default: True)
+    - `-eu, --echo_url BOOLEAN`: Overwrite ECHO_URL setting. (default: False)
+
+- `paaster set --name "" --value ""`: Set config parameters.
 
 ## Parameters
-- API_URL
-    - Backend URL, type string
-- FRONTEND_URL
-    - Frontend URL, type string
-- COPY_URL_TO_CLIPBOARD
-    - If to copy URL to clipboard, type "true/false"
-- OPEN_URL_IN_BROWSER
-    - If to open paste in browser, type "true/false"
+- `API_URL`: Backend URL, type: string.
+- `FRONTEND_URL`: Frontend URL, type: string.
+- `COPY_URL_TO_CLIPBOARD`: Copy URL to clipboard, type: "true/false".
+- `OPEN_URL_IN_BROWSER`: Open paste in the browser, type: "true/false".

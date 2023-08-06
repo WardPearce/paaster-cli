@@ -27,6 +27,7 @@ class JsonStorage:
         self.set("COPY_URL_TO_CLIPBOARD", True)
         self.set("OPEN_URL_IN_BROWSER", False)
         self.set("NAME", "paaster")
+        self.set("ECHO_URL", False)
 
     @property
     def pathway(self) -> str:
