@@ -28,7 +28,7 @@ elif SYSTEM == "Darwin":
 else:
     raise Exception("Platform not supported.")
 
-VALID = ["API_URL", "FRONTEND_URL", "COPY_URL_TO_CLIPBOARD", "OPEN_URL_IN_BROWSER"]
+VALID = ["API_URL", "FRONTEND_URL", "COPY_URL_TO_CLIPBOARD", "OPEN_URL_IN_BROWSER", "ECHO_URL"]
 STORAGE = JsonStorage(pathway)
 
 API_URL = STORAGE.get("API_URL")
