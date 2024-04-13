@@ -142,7 +142,7 @@ def upload(
     )
     if resp.status_code == 201:
         paste: Dict[str, str] = resp.json()
-        url = f"{FRONTEND_URL}{paste['_id']}#{url_unpadded_base64(raw_key)}"
+        url = f"{FRONTEND_URL}{paste['id']}#{url_unpadded_base64(raw_key)}"
 
         if echo_url:
             click.echo(url)
