@@ -24,7 +24,7 @@ if SYSTEM == "Linux":
 elif SYSTEM == "Windows":
     pathway = f"{getenv('APPDATA')}\\paaster"
 elif SYSTEM == "Darwin":
-    pathway = f"/Users/{getenv('HOME')}/Library/Application Support/paaster"
+    pathway = f"{getenv('HOME')}/Library/Application Support/paaster"
 else:
     raise Exception("Platform not supported.")
 
