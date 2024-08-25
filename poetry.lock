@@ -156,12 +156,12 @@ files = [
 
 [[package]]
 name = "pysodium"
-version = "0.7.17"
+version = "0.7.18"
 description = "python libsodium wrapper"
 optional = false
 python-versions = "*"
 files = [
-    {file = "pysodium-0.7.17.tar.gz", hash = "sha256:03afe011a36ab806380c0563591c48aba4e67b15e453b1249bf5c096fec9342d"},
+    {file = "pysodium-0.7.18.tar.gz", hash = "sha256:781ada024456ac74c411193b82d94018c85c94130ea01a22dbec48b8ff458b07"},
 ]
 
 [[package]]
