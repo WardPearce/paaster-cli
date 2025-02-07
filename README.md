@@ -1,3 +1,5 @@
+# Currently incompatible with Paaster v3
+
 # Paaster CLI: Encrypted Pastes from Your Terminal
 
 ## Support
