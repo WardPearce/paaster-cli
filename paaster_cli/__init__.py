@@ -6,9 +6,12 @@ Version 3, 29 June 2007
 """
 
 import platform
+import struct
 import webbrowser
+from base64 import b64encode
+from io import BytesIO
 from os import getenv
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 
 import click
 import pyperclip
@@ -28,14 +31,20 @@ elif SYSTEM == "Darwin":
 else:
     raise Exception("Platform not supported.")
 
-VALID = ["API_URL", "FRONTEND_URL", "COPY_URL_TO_CLIPBOARD", "OPEN_URL_IN_BROWSER", "ECHO_URL"]
+VALID = [
+    "API_URL",
+    "FRONTEND_URL",
+    "COPY_URL_TO_CLIPBOARD",
+    "OPEN_URL_IN_BROWSER",
+    "ECHO_URL",
+]
 STORAGE = JsonStorage(pathway)
 
-API_URL = STORAGE.get("API_URL")
-FRONTEND_URL = STORAGE.get("FRONTEND_URL")
-COPY_URL_TO_CLIPBOARD = STORAGE.get("COPY_URL_TO_CLIPBOARD")
-OPEN_URL_IN_BROWSER = STORAGE.get("OPEN_URL_IN_BROWSER")
-ECHO_URL = STORAGE.get("ECHO_URL", False)
+API_URL: str = STORAGE.get("API_URL")
+FRONTEND_URL: str = STORAGE.get("FRONTEND_URL")
+COPY_URL_TO_CLIPBOARD: bool = STORAGE.get("COPY_URL_TO_CLIPBOARD")
+OPEN_URL_IN_BROWSER: bool = STORAGE.get("OPEN_URL_IN_BROWSER")
+ECHO_URL: bool = STORAGE.get("ECHO_URL", False)
 
 
 @click.group()
@@ -130,32 +139,86 @@ def upload(
     if not plain_paste.strip():
         return
 
-    raw_key = pysodium.randombytes(pysodium.crypto_aead_xchacha20poly1305_ietf_KEYBYTES)
-    raw_iv = pysodium.randombytes(pysodium.crypto_aead_xchacha20poly1305_ietf_NPUBBYTES)
-    cipher_text = pysodium.crypto_aead_xchacha20poly1305_ietf_encrypt(
-        plain_paste.encode("utf8"), None, raw_iv, raw_key
+    # Generate master key and salt for encryption
+    raw_master_key = pysodium.randombytes(32)
+    paste_key_salt = pysodium.randombytes(pysodium.crypto_pwhash_SALTBYTES)
+
+    paste_key_raw = pysodium.crypto_pwhash(
+        pysodium.crypto_secretstream_xchacha20poly1305_KEYBYTES,
+        raw_master_key,
+        paste_key_salt,
+        pysodium.crypto_pwhash_OPSLIMIT_INTERACTIVE,
+        pysodium.crypto_pwhash_MEMLIMIT_INTERACTIVE,
+        pysodium.crypto_pwhash_ALG_DEFAULT,
     )
 
+    # Initialize the secretstream encryption state
+    stream, header = pysodium.crypto_secretstream_xchacha20poly1305_init_push(
+        paste_key_raw
+    )
+
+    encrypted_buffer = []
+    raw_processed_length = 0
+    raw_bytes = plain_paste.encode("utf-8")
+
+    # Encrypt the data in chunks
+    for i in range(0, len(raw_bytes), 1024):
+        raw_chunk = raw_bytes[i : i + 1024]
+        raw_processed_length += len(raw_chunk)
+
+        # Decide on tag (message or final chunk)
+        tag = (
+            pysodium.crypto_secretstream_xchacha20poly1305_TAG_FINAL
+            if raw_processed_length >= len(raw_bytes)
+            else pysodium.crypto_secretstream_xchacha20poly1305_TAG_MESSAGE
+        )
+
+        encrypted_chunk = pysodium.crypto_secretstream_xchacha20poly1305_push(
+            stream, raw_chunk, None, tag
+        )
+
+        # Store the length of the chunk in little-endian format
+        chunk_len_bytes = struct.pack("<I", len(encrypted_chunk))
+        encrypted_buffer.append(chunk_len_bytes + encrypted_chunk)
+
+    # Prepare form data for sending
+    form_data = {
+        "codeHeader": url_unpadded_base64(header),
+        "codeKeySalt": url_unpadded_base64(paste_key_salt),
+    }
+
+    # Upload encrypted content to Paaster.io
     resp = requests.post(
-        API_URL + f"controller/paste/{url_unpadded_base64(raw_iv)}",
-        data=cipher_text,
+        API_URL + f"api/paste",
+        data=form_data,
+        headers={
+            "Referer": API_URL,
+            "Origin": API_URL.removesuffix("/"),
+        },
     )
-    if resp.status_code == 201:
-        paste: Dict[str, str] = resp.json()
-        url = f"{FRONTEND_URL}{paste['id']}#{url_unpadded_base64(raw_key)}"
+    if resp.ok:
+        paste: Dict[str, Any] = resp.json()
 
-        if echo_url:
-            click.echo(url)
+        s3_payload = {}
+        for key, value in paste["signedUrl"]["fields"].items():
+            s3_payload[key] = value
 
-        if copy_to_clipboard:
-            pyperclip.copy(url)
+        blob = BytesIO(b"".join(encrypted_buffer))
+        s3_payload["file"] = blob
 
-        if open_browser:
-            # Adds server secret at end of URL.
-            # this will be removed from URL ASAP by paaster,
-            # this functionality isn't done for copy on clipboard
-            # because someone may share the link directly
-            # with someone else.
+        s3_response = requests.post(
+            paste["signedUrl"]["url"],
+            files=s3_payload,
+        )
 
-            # This secret isn't shared with the server at any point.
-            webbrowser.open(url + "&ownerSecret=" + paste["owner_secret"], 0)
+        if s3_response.ok:
+            url = f"{FRONTEND_URL}{paste['pasteId']}#{url_unpadded_base64(raw_master_key)}"
+
+            if echo_url:
+                click.echo(url)
+
+            if copy_to_clipboard:
+                pyperclip.copy(url)
+
+            if open_browser:
+                webbrowser.open(url, 0)

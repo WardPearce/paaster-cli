@@ -22,7 +22,7 @@ class JsonStorage:
         except FileExistsError:
             pass
 
-        self.set("API_URL", "https://api.paaster.io/")
+        self.set("API_URL", "https://paaster.io/")
         self.set("FRONTEND_URL", "https://paaster.io/")
         self.set("COPY_URL_TO_CLIPBOARD", True)
         self.set("OPEN_URL_IN_BROWSER", False)
